@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>화장품 원료 성분 정보</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            padding: 20px;
+            background-color: #f8f9fa;
+        }
+        .header {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .logo {
+            width: 50px; /* 이미지 크기 조절 */
+            height: auto;
+        }
+        h1 {
+            margin: 0;
+            font-size: 24px;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="header">
+        <img src="피부로그사진.png" alt="로고" class="logo">
+        <h1>화장품 원료 성분 정보</h1>
+    </div>
+
+    <button onclick="fetchData()">데이터 가져오기</button>
+    <table id="dataTable">
+        <thead>
+            <tr>
+                <th>성분명</th>
+                <th>영문명</th>
+                <th>기능</th>
+            </tr>
+        </thead>
+        <tbody>
+        </tbody>
+    </table>
+
+    <script>
+        async function fetchData() {
+            const serviceKey = "LFriN6wdYvRJGUwZsh3ZL2lfyNtLaixTqOTAfeV8QPbhcRD8tJw5CkKQTiwdc2NS3Oc6uJF5bwadoHx42FHmAA%3D%3D";
+            const url = `https://apis.data.go.kr/1471000/CsmtcsIngdCpntInfoService01/getCsmtcsIngdCpntInfoService01?serviceKey=${serviceKey}&pageNo=1&numOfRows=5&type=json&INGR_KOR_NAME=정제수`;
+
+            try {
+                const response = await fetch(url);
+                const text = await response.text();
+
+                if (text.startsWith("<")) {
+                    throw new Error("API 응답이 XML입니다. JSON을 요청했는지 확인하세요.");
+                }
+
+                const data = JSON.parse(text);
+
+                if (data.body && data.body.items && data.body.items.length > 0) {
+                    const items = data.body.items;
+                    const tableBody = document.querySelector("#dataTable tbody");
+                    tableBody.innerHTML = "";
+
+                    items.forEach(item => {
+                        const row = document.createElement("tr");
+                        row.innerHTML = `
+                            <td>${item.INGR_KOR_NAME || "정보 없음"}</td>
+                            <td>${item.INGR_ENG_NAME || "정보 없음"}</td>
+                            <td>${item.INGR_FUNCTION || "정보 없음"}</td>
+                        `;
+                        tableBody.appendChild(row);
+                    });
+                } else {
+                    alert("데이터를 찾을 수 없습니다.");
+                }
+            } catch (error) {
+                alert("데이터를 가져오는 중 오류 발생: " + error.message);
+            }
+        }
+    </script>
+
+</body>
+</html>
